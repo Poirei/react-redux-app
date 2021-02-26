@@ -1,58 +1,110 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import { REMOVE_CONTACT } from "./actions/actionTypes";
+import * as contactAction from "./actions/contactAction";
+import "./App.css";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
+class App extends Component {
+  constructor(props) {
+    super(props);
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.state = {
+      name: "",
+    };
+  }
+
+  handleChange(e) {
+    this.setState({ name: e.target.value });
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+    let contact = {
+      name: this.state.name,
+    };
+    this.setState({
+      name: "",
+    });
+    this.props.createContact(contact);
+  }
+
+  listView(data, index) {
+    return (
+      <div className="row">
+        <div className="col-md-10">
+          <li key={index} className="list-group-item clearfix">
+            {data.name}
+          </li>
+        </div>
+        <div className="col-md-2">
+          <button
+            className="btn btn-danger"
+            onClick={(e) => this.deleteContact(e, index)}
           >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
-  );
+            Remove Contact
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  deleteContact(e, index) {
+    e.preventDefault();
+    this.props.deleteContact(index);
+  }
+
+  render() {
+    return (
+      <div className="container">
+        <h1>Clientside Contacts Application</h1>
+        <hr />
+        <div>
+          <h3>Add contact form</h3>
+
+          <form onSubmit={this.handleSubmit}>
+            <input
+              type="text"
+              onChange={this.handleChange}
+              className="form-control"
+              value={this.state.name}
+            />
+            <br />
+            <input type="submit" className="btn btn-success" value="ADD" />
+          </form>
+          <hr />
+          {
+            <ul className="list-group">
+              {this.props.contacts.map((contact, i) =>
+                this.listView(contact, i)
+              )}
+            </ul>
+          }
+        </div>
+      </div>
+    );
+  }
 }
 
-export default App;
+const mapStateToProps = (state, ownProps) => {
+  return {
+    contacts: state.contacts,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    createContact: (contact) => dispatch(contactAction.createContact(contact)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
+
+//connect()
+/*
+
+connect is a function that bridges the gap between store and components. It also provides a way to pass the state as props to 
+display data or dispatch events to redux store
+
+*/
